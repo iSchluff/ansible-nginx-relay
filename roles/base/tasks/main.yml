@@ -1,0 +1,18 @@
+---
+- name: Install essential packages
+  apt:
+    name:
+      - git
+      - vim
+      - htop
+      - tmux
+      - zsh
+      - haveged
+      - rsync
+      - apt-transport-https
+      - iptables-persistent
+      - sudo
+      - vnstat
+      - tcpdump
+      - curl
+      - unzip

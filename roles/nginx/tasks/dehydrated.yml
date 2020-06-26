@@ -1,0 +1,44 @@
+- name: Install dehydrated
+  synchronize:
+    src: dehydrated/
+    dest: /etc/dehydrated/
+    archive: no
+    recursive: yes
+    links: yes
+    delete: no
+    owner: no
+    group: no
+    perms: yes
+    times: no
+    checksum: yes
+
+- name: "Configure dehydrated: config"
+  copy:
+    content: "HOOK=/etc/dehydrated/hook.sh\nWELLKNOWN=/var/www/letsencrypt"
+    dest: /etc/dehydrated/config
+  register: dehyconfig
+
+- name: "Configure dehydrated: domains.txt"
+  copy:
+    content: "{{ inventory_hostname }}{% if extra_hostnames is defined %}{% for hostname in extra_hostnames %} {{ hostname }}{% endfor %}{% endif %}"
+    dest: /etc/dehydrated/domains.txt
+  register: dehydomains
+
+- name: "Configure dehydrated: hook.sh"
+  copy:
+    src: hook.sh
+    dest: /etc/dehydrated/hook.sh
+    mode: '0755'
+
+- name: Create wellknown directory
+  file:
+    state: directory
+    path: /var/www/letsencrypt
+
+- name: Register account
+  command: /etc/dehydrated/dehydrated --register --accept-terms
+  when: dehyconfig.changed
+
+- name: Initial dehydrated run
+  command: /etc/dehydrated/dehydrated --cron
+  when: dehyconfig.changed or dehydomains.changed

@@ -1,0 +1,14 @@
+---
+  - name: create nginx vhost
+    template:
+      src: nginx/ingest.conf.j2
+      dest: "/etc/nginx/server-conf.d/{{ ansible_fqdn }}"
+    register: ingest_vhost
+  
+  - name: reload nginx
+    service:
+      name: nginx
+      state: reloaded
+    when: ingest_vhost.changed
+  
+  

@@ -1,0 +1,68 @@
+user  www-data;
+worker_rlimit_nofile 65536;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /var/run/nginx.pid;
+include /etc/nginx/conf.d/*;
+
+events {
+  worker_connections 4096;
+  accept_mutex off;
+}
+
+http {
+  sendfile on;
+  tcp_nopush on;
+  tcp_nodelay on;
+  keepalive_timeout 65;
+  types_hash_max_size 2048;
+
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers on;
+  ssl_dhparam /etc/nginx/dhparam.pem;
+  ssl_ciphers EECDH+AESGCM:EDH+AESGCM;
+  ssl_ecdh_curve secp384r1;
+  ssl_session_timeout  10m;
+  ssl_session_cache shared:SSL:10m;
+  ssl_session_tickets off;
+
+  server_tokens off;
+  #access_log /var/log/nginx/access.log;
+  access_log off;
+  #error_log /var/log/nginx/error.log;
+  error_log off;
+
+  types {
+    application/dash+xml mpd;
+  }
+
+  # gzip settings
+  gzip on;
+
+  # disable directory listing
+  autoindex off;
+
+  server {
+    listen 80 default;
+    listen [::]:80 default;
+    server_name {{ inventory_hostname }};
+    location /.well-known/acme-challenge { alias /var/www/letsencrypt; }
+    location / { return 301 https://$host$request_uri; }
+  }
+
+  server {
+    listen 443 default ssl http2;
+    listen [::]:443 default ssl http2;
+    server_name {{ inventory_hostname }};
+
+    #add_header Strict-Transport-Security "max-age=31536000";
+
+    ssl_certificate /etc/nginx/ssl/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+
+    include /etc/nginx/server-conf.d/*.conf;
+  }
+}

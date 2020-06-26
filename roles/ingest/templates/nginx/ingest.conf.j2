@@ -1,0 +1,7 @@
+
+# stream-api
+location /backend/ {
+  auth_basic "stream-api login";
+  auth_basic_user_file htpasswd;
+  proxy_pass http://127.0.0.1:8082;
+}

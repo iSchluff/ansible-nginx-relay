@@ -1,0 +1,6 @@
+---
+  - hosts: ingest
+    roles:
+      - { role: base, tags: ['base'] }
+      - { role: nginx, tags: ['nginx'] }
+      - { role: ingest, tags: ['ingest'] }

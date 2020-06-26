@@ -1,0 +1,61 @@
+---
+# Install packages
+  - name: install nginx
+    apt:
+      name:
+        - nginx-extras
+        - ssl-cert
+      state: present
+
+  - name: Check for SSL certificate directory
+    stat: path=/etc/nginx/ssl
+    register: nginxssl
+
+  - name: Create SSL certificate directory
+    file:
+      dest: /etc/nginx/ssl
+      state: directory
+      mode: '0700'
+    when: nginxssl.stat.exists == false
+
+  - name: Copy temporary snakeoil SSL certificate
+    copy:
+      src: /etc/ssl/certs/ssl-cert-snakeoil.pem
+      dest: /etc/nginx/ssl/fullchain.pem
+      mode: '0600'
+      remote_src: yes
+    when: nginxssl.stat.exists == false
+
+  - name: Copy temporary snakeoil SSL key
+    copy:
+      src: /etc/ssl/private/ssl-cert-snakeoil.key
+      dest: /etc/nginx/ssl/privkey.pem
+      mode: '0600'
+      remote_src: yes
+    when: nginxssl.stat.exists == false
+
+  - name: Check for custom dh params
+    stat: path=/etc/nginx/dhparam.pem
+    register: nginxdhparam
+
+  - name: Create custom dh params
+    command: openssl dhparam -dsaparam -out /etc/nginx/dhparam.pem 2048
+    when: nginxdhparam.stat.exists == false
+
+  - name: Configure nginx
+    template:
+      src: nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
+    register: nginxconf
+
+  - name: Create nginx server config directory
+    file:
+      path: "/etc/nginx/{{ item }}"
+      state: directory
+    with_items:
+      - "server-conf.d"
+      - "conf.d"
+
+  - name: Reload nginx
+    command: systemctl reload nginx
+    when: nginxconf.changed

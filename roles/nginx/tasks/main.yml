@@ -1,0 +1,7 @@
+---
+  - include: nginx.yml
+  - include: nginx_rtmp.yml
+    tags: rtmp
+  - include: rtmp_auth.yml
+    tags: rtmp
+  - include: dehydrated.yml
