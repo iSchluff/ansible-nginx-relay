@@ -86,7 +86,7 @@ deploy_cert() {
     #   Timestamp when the specified certificate was created.
 
     # Simple example: Copy file to nginx config
-    cp "${KEYFILE}" "${FULLCHAINFILE}" /etc/nginx/ssl/; chown -R nginx: /etc/nginx/ssl
+    cp "${KEYFILE}" "${FULLCHAINFILE}" /etc/nginx/ssl/; chown -R nginx:nginx /etc/nginx/ssl
     systemctl reload nginx
 }
 
