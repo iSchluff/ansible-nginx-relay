@@ -28,9 +28,7 @@ rtmp {
     application stream {
       # enable live streaming
       live on;
-      meta copy;
-
-      hls off;
+      meta off;
 
       allow publish all;
       allow play all;
@@ -41,12 +39,6 @@ rtmp {
       on_publish_done http://127.0.0.1:8080/unpublish;
       {% endif %}
 
-      # forward streams to local icecast
-      #exec ffmpeg -v warning -nostats -nostdin -y -analyzeduration 1000000
-      #  -i rtmp://127.0.0.1/$app/$name
-      #  -c copy -map 0:v:0 -map 0:a:0
-      #  -f matroska -content_type video/webm -password abc
-      #  icecast://127.0.0.1:8000/${name};
     }
 
     # relay only

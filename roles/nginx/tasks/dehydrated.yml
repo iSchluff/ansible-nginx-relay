@@ -42,3 +42,21 @@
 - name: Initial dehydrated run
   command: /etc/dehydrated/dehydrated --cron
   when: dehyconfig.changed or dehydomains.changed
+
+- name: Deploy dehydrated timer
+  copy:
+    src: "service/{{ item }}"
+    dest: /etc/systemd/system/
+    mode: 0644
+  loop:
+    - dehydrated.service
+    - dehydrated.timer
+  register: dehydrated_service
+
+- name: Enable/Start dehydrated timer
+  systemd:
+    name: dehydrated.timer
+    state: started
+    daemon_reload: true
+    enabled: true
+  when: dehydrated_service.changed
